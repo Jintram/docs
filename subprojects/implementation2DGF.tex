@@ -1,0 +1,341 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{hyphenat}
+\usepackage{multirow}
+
+%opening
+\title{2D. JETZT! \\ Status Implemenatation 2D Green's Functions.}
+\author{Martijn Wehrens}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Currently, the 3D Green's Functions\footnote{There are actually quite some Green's Functions because in a load of cases the ``general'' solution don't converge, and an approximation is used.} are implemented in a fully functional way. The 1D Green's Functions are also more or less [TODO: what is their status actually????] operational.
+
+The 2D Green's Functions are programmed but not yet implemented at the writing of this introduction, this document reports about their implementation. 
+
+\section{General Structure of Green's Function Implementation}
+
+The Green's Function functions - the latter word function here used in a way programmers would use it, the first used in the mathematical sense - are coded in C++. Via Boost these functions are made available to Python.
+
+In general, the filename of such a function is named after the Green's Function it contains. The file in general contains a class which carries the same name. This class has subfunctions that allow Python to e.g. draw times and displacement vectors. 
+
+As mentioned, these functions are accesible in Python because of the Boost linking. In Python, this means if one wants to use a Green's Function object, one does the following:
+
+\label{GFusageexample}
+\begin{verbatim}
+from _greens_functions import *
+
+def greens_function_init(some_parameters):
+    return GreensFunction1DAbsAbs(some_parameters)
+
+def draw_time_certain_event(parameters):
+    gf = greens_function_init(some_parameters)
+    return(gf.drawtime(some_other_parameters))
+
+certain_next_event_time = draw_time_certain_event(parameters)
+
+\end{verbatim}
+
+The suffix ``\_init`` is added to this code, it does not appear in the eGFRD python code.
+
+
+\section{Currently Used}
+
+\subsection{Currently Used 3D functions}
+
+In table \ref{3Dtable} one can find an overview of the 3D Green's function names (with the prefix ``GreensFunction`` and suffix ''.hpp`` left out) and in which cases they're used. In table \ref{3Dtableinst} one can see in which Python functions the 3D Green's Function classes are instantiated. Furthermore, in table \ref{3Dtableownnames} a list of the names as given in the function files is given.
+
+\begin{table}[h!]
+\caption{List of 3D Greens functions and in which case they're instantiated.}
+\label{3Dtable}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Used in case:} \\
+3DAbs 		& IV, ''near shell'' case\\
+3DAbsSym 	& 3D Single  \\
+		& (2D single) \\
+3D 		& IV, ``distant both'' case\\
+3DRadAbsBase 	& \\
+3DRadAbs	& IV, ``normal'' case\\
+3DRadInf 	& IV, ''near sigma`` case\\
+3DSym 		& \\
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\caption{List of 3D Greens functions and when they're instantiated.}
+\label{3Dtableinst}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Instantiated in:} \\
+3DAbs 		& SphericalPair.choose\_pair\_greens\_function\\
+3DAbsSym 	& SphericalSingle.greens\_function()\\
+		& PlanarSurfaceSingle.greens\_function()\\
+3D 		& SphericalPair.choose\_pair\_greens\_function\\
+3DRadAbsBase 	& \\
+3DRadAbs	& SphericalPair.iv\_greens\_function(r0)\\
+		& SphericalPair.choose\_pair\_greens\_function (via above)\\
+3DRadInf 	& SphericalPair.choose\_pair\_greens\_function\\
+3DSym 		& \\
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\caption{3D Green's function naming in hpp files.}
+\label{3Dtableownnames}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Defined as} \\
+3DAbs 		 & FIRSTPASSAGENOCOLLISION\hyp{}PAIRGREENSFUNCTION \\ 		
+3DAbsSym 	 & FIRSTPASSAGEGREENSFUNCTION \\
+3D 		 & FREEPAIRGREENSFUNCTION \\
+3DRadAbsBase 	 & FIRSTPASSAGEPAIRGREENS\hyp{}FUNCTIONBASE \\
+3DRadAbs	 & FIRSTPASSAGEPAIRGREENS\hyp{}FUNCTION \\
+3DRadInf 	 & PLAINPAIRGREENSFUNCTION \\
+3DSym 		 & FREEGREENSFUNCTION \\
+\end{tabular}
+\end{table}
+
+\subsection{2D GF functions currently substituted by 3D GFs}
+
+When writing this, the 2D functions are programmed, but not yet implemented. It is however possible to define a membrane with particles in eGFRD. That is because the 3D functions are used as substitute for the 2D functions. In table \ref{3Dtablesubst} one can find an overview of which 3D functions are used for which 2D function. In table \ref{3Dtablesubstinst} there's an overview which shows from which (''2D'') functions the 3D Green's Functions are instantiated.
+
+\begin{table}[h!]
+\caption{List of 3D Greens functions and in which cases they're instantiated for 2D purposes.}
+\label{3Dtablesubst}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Used in case:} \\
+3DAbs 		& \\
+3DAbsSym 	& Pair COM\\
+		& Single \\
+3D 		& \\
+3DRadAbsBase 	& \\
+3DRadAbs	& Pair interparticle vector\\
+3DRadInf 	& \\
+3DSym 		& \\
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\caption{List of 3D Greens functions and when they're instantiated for 2D purposes.}
+\label{3Dtablesubstinst}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Instantiated in:} \\
+3DAbs 		& \\
+3DAbsSym 	& PlanarSurfacePair.com\_greens\_function()\\
+		& PlanarSurfaceSingle.greens\_function()\\
+3D 		& \\
+3DRadAbsBase 	& \\
+3DRadAbs	& PlanarSurfaceSingle.iv\_greens\_function\\
+		& \\
+3DRadInf 	& \\
+3DSym 		& \\
+\end{tabular}
+\end{table}
+ 
+\subsection{Currently used 1D functions}
+
+Currently, for 1D only GreensFunction1DAbsAbs.hpp and GreensFunction1DRadAbs.hpp are in use. But this is because not all 1D functions are coded. In table \ref{1Dtableinst} an overview from where the Green's Functions are instantiated.
+
+\begin{table}[h!]
+\caption{List of 1D Greens functions and when they're instantiated.}
+\label{1Dtableinst}
+\begin{tabular}{ p{0.24\textwidth} p{0.74\textwidth} }
+  \textbf{Green's Function name} & \textbf{Used in case:} \\
+1DAbsAbs	& CylindricalSurfacePair.com\_greens\_function()\\
+1DRadAbs 	& CylindricalSurfaceSingle.greens\_funtion()\\
+		& CylindricalSurfacePair.iv\_greens\_function()
+\end{tabular}
+\end{table}
+
+\subsection{Misc.}
+
+There is also the file GreensFunction.hpp, which according to file itself is used for an IV escape or an reaction (own name: GREENSFUNCTION).
+
+\section{Binding C++ and python}
+ 
+In \texttt{greensfunctions.cpp} one can find the binding of C++ and python. A typical wrapping of a Green's Function looks like this:
+
+\begin{verbatim}
+(..)
+
+#include <boost/python.hpp>
+
+#include "(..)" // include Green's Functions
+
+BOOST_PYTHON_MODULE( _greens_functions ) // defines name module
+{
+    using namespace boost::python;
+
+    class_<GreensFunction1DAbsAbs>("GreensFunction1DAbsAbs",
+                                   init<Real, Real, Real, Real>() )
+        .def( init<Real, Real, Real, Real, Real>()) // not all have this
+        .def( "getD", &GreensFunction1DAbsAbs::getD )
+        .def( "getv", &GreensFunction1DAbsAbs::getv )
+        .def( "getsigma", &GreensFunction1DAbsAbs::getsigma )
+        (..) // more member functions
+        ;
+}
+\end{verbatim} 
+ 
+From Python, a Green's Function (keep in mind these are classes) is now accessible via importing ''\_greens\_functions``. See section \ref{GFusageexample} for an example.
+
+\bigskip 
+
+\textsc{A straightforward piece of sample code with a trivial function ''exposed`` to Python using boost in abovementioned way a bunch of compile errors however. Should look into this!}
+
+\section{Current status 2D functions}
+
+\subsection{Files}
+
+Laurens Bossen coded the 2D functions. However, he used the old nomenclature to define the functions. In his days, the following Green's Functions were present: , .
+\begin{itemize}
+ \item \texttt{FirstPassageGreensFunction1D}
+ \item \texttt{FirstPassageGreensFunction1DRad} 
+ \item \texttt{FirstPassageGreensFunction2D}
+ \item \texttt{FirstPassageGreensFunction}
+ \item \texttt{FirstPassageNoCollisionPairGreensFunction}
+ \item \texttt{FirstPassagePairGreensFunction2D}
+ \item \texttt{FirstPassagePairGreensFunction}
+ \item \texttt{freeFunctions}
+ \item \texttt{FreeGreensFunction}
+ \item \texttt{FreePairGreensFunction}
+\end{itemize}
+
+It seems that only \texttt{FirstPassageGreensFunction2D} and \texttt{FirstPassagePair\hyp{}GreensFunction2D} are applicable for 2D purposes. Concluding from tables \ref{3Dtableownnames} (which directly shows the renaming that has been done), \ref{3Dtablesubst} and \ref{3Dtablesubstinst}, the two 2D functions should be renamed as shown in table \ref{table:2Drenaming}.
+
+It would however be nice to have a definite conformation these 2D Green's Functions have the boundary conditions specified by the new nomenclature.
+
+\begin{table}[h!]
+\caption{2D function renaming.}
+\label{table:2Drenaming}
+\begin{tabular}{ p{0.49\textwidth} p{0.49\textwidth} }
+  \textbf{Current name} & \textbf{Proposed new name} \\
+  FirstPassageGreensFunction2D & GreensFunction2DAbsSym \\
+  FirstPassagePairGreensFunction2D & GreensFunction2DRadAbs\\
+\end{tabular}
+\end{table}
+
+\subsection{Binding}
+
+The bindings of these functions can be found in \texttt{pyGFRD.cpp} (in new nomenclature, the bindings can be found in \texttt{greensfunctions.cpp}). They look as follows:
+
+\label{boostdeclaration}
+\begin{verbatim}
+    class_<FirstPassageGreensFunction2D>( "FirstPassageGreensFunction2D",
+					init<const Real>() )
+	.def( "getD", &FirstPassageGreensFunction2D::getD )
+	.def( "seta", &FirstPassageGreensFunction2D::seta )
+	.def( "geta", &FirstPassageGreensFunction2D::geta )
+	.def( "drawTime", &FirstPassageGreensFunction2D::drawTime )
+	.def( "drawR", &FirstPassageGreensFunction2D::drawR )
+	.def( "p_survival", &FirstPassageGreensFunction2D::p_survival )
+	//.def( "p_int_r", &FirstPassageGreensFunction2D::p_int_r )
+	//.def( "p_int_r_free", &FirstPassageGreensFunction2D::p_int_r_free )
+	//.def( "p_r_fourier", &FirstPassageGreensFunction2D::p_r_fourier )
+	;
+
+    class_<FirstPassagePairGreensFunction2D>( "FirstPassagePairGreensFunction2D",
+					    init<const Real, 
+					    const Real,
+					    const Real>() )
+	.def( "seta", &FirstPassagePairGreensFunction2D::seta )
+	.def( "geta", &FirstPassagePairGreensFunction2D::geta )
+	.def( "getD", &FirstPassagePairGreensFunction2D::getD )
+	.def( "getkf", &FirstPassagePairGreensFunction2D::getkf )
+	.def( "geth", &FirstPassagePairGreensFunction2D::geth )
+	.def( "getSigma", &FirstPassagePairGreensFunction2D::getSigma )
+	.def( "drawTime", &FirstPassagePairGreensFunction2D::drawTime )
+	.def( "drawEventType", &FirstPassagePairGreensFunction2D::drawEventType )
+	.def( "drawR", &FirstPassagePairGreensFunction2D::drawR )
+	.def( "drawTheta", &FirstPassagePairGreensFunction2D::drawTheta )
+	.def( "getAlpha", &FirstPassagePairGreensFunction2D::getAlpha )
+	.def( "getAlpha0", &FirstPassagePairGreensFunction2D::getAlpha0 )
+	.def( "f_alpha", &FirstPassagePairGreensFunction2D::f_alpha )
+	.def( "f_alpha0", &FirstPassagePairGreensFunction2D::f_alpha0 )
+	.def( "alpha_i", &FirstPassagePairGreensFunction2D::alpha_i )
+	.def( "p_survival", &FirstPassagePairGreensFunction2D::p_survival )
+	.def( "leaves", &FirstPassagePairGreensFunction2D::leaves )
+	.def( "leavea", &FirstPassagePairGreensFunction2D::leavea )
+	;
+\end{verbatim} 
+
+\section{Memberfunctions}
+
+Currently the 3D functions are used as a substitute for the 2D functions. Therefore, to check if the 2D functions can be implemented with the above code, it is good to check member-function nomenclature for agreement.
+
+
+
+\begin{table}[h!]
+\caption{List of member functions 2D Green's functions and their current 3D substitutes.}
+\label{table:memberfunctions}
+\begin{tabular}{ p{0.49\textwidth} p{0.49\textwidth} }
+  \textbf{FirstPassageGreensFunction2D} & \textbf{3DAbsSym} \\ \hline
+
+    getD & getD \\
+    seta & (n.a.) \\
+    geta & geta \\
+    drawTime & drawTime \\
+    drawR & drawR \\ \hline
+    p\_survival & p\_survival \\
+    
+    \textit{p\_int\_r} & p\_int\_r \\
+    \textit{p\_int\_r\_free} & p\_int\_r\_free \\
+    \textit{p\_r\_fourier} & \textit{p\_r\_fourier} \\ 
+
+  & \\
+  \textbf{FirstPassageGreensFunction2D} & \textbf{3DAbsSym} \\ \hline
+
+    seta & (n.a.) \\
+    geta & geta \\
+    getD & getD \\
+    getkf & getkf \\
+    geth & (n.a.) \\ \hline
+    setSigma & getSigma \\
+    drawTime & drawTime \\
+    (n.a) & \textit{drawTime2} \\
+    drawEventType & drawEventType \\ 
+    drawR & drawR \\ \hline 
+    drawTheta & drawTheta \\
+    getAlpha & (n.a.) \\
+    getAlpha0 & (n.a) \\
+    f\_alpha & f\_alpha \\
+    f\_alpha0 & f\_alpha0 \\ \hline
+    alpha\_i & (n.a.) \\
+    (n.a.) & alpha0\_i \\
+    p\_survival & p\_survival \\
+    (n.a.) & dp\_survival \\
+    leaves & leaves \\ \hline 
+    leavea & leavea \\
+    (n.a.) & p\_0 \\
+    (n.a.) & p\_int\_r \\
+    (n.a.) & p\_theta \\
+    (n.a.) & ip\_theta \\ \hline
+    (n.a.) & idp\_theta \\
+
+    (n.a.) & f\_alpha\_aux \\
+
+    (n.a.) & p\_survival\_i\_exp \\
+    (n.a.) & p\_survival\_i\_alpha \\
+
+    (n.a.) & \textit{guess\_maxi} \\ \hline
+    (n.a.) & dump \\
+    (n.a.) & \textit{alpha\_i} \\
+  
+\end{tabular}
+
+\bigskip 
+
+Note that italic functions are actually not declarated but present as comment. (See section \ref{boostdeclaration} for 2D functions.)
+\end{table}
+
+\section{Implementation 2D functions}
+
+In principle the functions should only be renamed (filenames, classnames), checked for member function nomenclature consistency with current nomenclature and pasted into current eGFRD folder, their bindings also renamed and added to the \texttt{greensfunctions.cpp} file.
+
+\end{document}
