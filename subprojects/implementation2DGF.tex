@@ -15,9 +15,11 @@
 
 \maketitle
 
+\tableofcontents
+
 \section{Introduction}
 
-Currently, the 3D Green's Functions\footnote{There are actually quite some Green's Functions because in a load of cases the ``general'' solution don't converge, and an approximation is used.} are implemented in a fully functional way. The 1D Green's Functions are also more or less [TODO: what is their status actually????] operational.
+Currently, the 3D Green's Functions\footnote{There are actually quite some Green's Functions because in a load of cases the ``general'' solution don't converge, and an approximation is used.} are implemented in a fully functional way. The 1D Green's Functions are also more or less operational (they function, but show problems with convergence and in certain limits).
 
 The 2D Green's Functions are programmed but not yet implemented at the writing of this introduction, this document reports about their implementation. 
 
@@ -49,7 +51,7 @@ The suffix ``\_init`` is added to this code, it does not appear in the eGFRD pyt
 
 \section{Currently Used}
 
-\subsection{Currently Used 3D functions}
+\subsection{Currently Used 3D Functions}
 
 In table \ref{3Dtable} one can find an overview of the 3D Green's function names (with the prefix ``GreensFunction`` and suffix ''.hpp`` left out) and in which cases they're used. In table \ref{3Dtableinst} one can see in which Python functions the 3D Green's Function classes are instantiated. Furthermore, in table \ref{3Dtableownnames} a list of the names as given in the function files is given.
 
@@ -101,7 +103,8 @@ In table \ref{3Dtable} one can find an overview of the 3D Green's function names
 \end{tabular}
 \end{table}
 
-\subsection{2D GF functions currently substituted by 3D GFs}
+\subsection{2D GF Functions Currently Substituted by 3D GFs}
+\label{2Dsubst}
 
 When writing this, the 2D functions are programmed, but not yet implemented. It is however possible to define a membrane with particles in eGFRD. That is because the 3D functions are used as substitute for the 2D functions. In table \ref{3Dtablesubst} one can find an overview of which 3D functions are used for which 2D function. In table \ref{3Dtablesubstinst} there's an overview which shows from which (''2D'') functions the 3D Green's Functions are instantiated.
 
@@ -138,7 +141,9 @@ When writing this, the 2D functions are programmed, but not yet implemented. It 
 \end{tabular}
 \end{table}
  
-\subsection{Currently used 1D functions}
+See section \ref{2Dsubstusage} for more information on \textit{how} the eGFRD code makes use of the 3D functions for 2D purposes.
+
+\subsection{Currently Used 1D Functions}
 
 Currently, for 1D only GreensFunction1DAbsAbs.hpp and GreensFunction1DRadAbs.hpp are in use. But this is because not all 1D functions are coded. In table \ref{1Dtableinst} an overview from where the Green's Functions are instantiated.
 
@@ -157,7 +162,7 @@ Currently, for 1D only GreensFunction1DAbsAbs.hpp and GreensFunction1DRadAbs.hpp
 
 There is also the file GreensFunction.hpp, which according to file itself is used for an IV escape or an reaction (own name: GREENSFUNCTION).
 
-\section{Binding C++ and python}
+\section{Binding C++ and Python}
  
 In \texttt{greensfunctions.cpp} one can find the binding of C++ and python. A typical wrapping of a Green's Function looks like this:
 
@@ -189,7 +194,7 @@ From Python, a Green's Function (keep in mind these are classes) is now accessib
 
 \textsc{A straightforward piece of sample code with a trivial function ''exposed`` to Python using boost in abovementioned way a bunch of compile errors however. Should look into this!}
 
-\section{Current status 2D functions}
+\section{Current Status 2D Functions}
 
 \subsection{Files}
 
@@ -265,77 +270,254 @@ The bindings of these functions can be found in \texttt{pyGFRD.cpp} (in new nome
 	;
 \end{verbatim} 
 
-\section{Memberfunctions}
+\section{Function Parameters}
 
-Currently the 3D functions are used as a substitute for the 2D functions. Therefore, to check if the 2D functions can be implemented with the above code, it is good to check member-function nomenclature for agreement.
-
-
+To integrate the 2D functions, one should check their input parameters for agreement. See table \ref{table:declcomp}.
 
 \begin{table}[h!]
-\caption{List of member functions 2D Green's functions and their current 3D substitutes.}
+\caption{Comparision declaration.}
+\label{table:declcomp}
+\begin{tabular}{ p{0.49\textwidth} p{0.49\textwidth} }
+  \textit{Function name} & \textit{Parameters} \\
+  \textbf{3D: AbsSym} & D, a \\
+  \textbf{2D: AbsSym / FirstPassage}  & const D \\
+  \textbf{3D: RadAbs} &  D, kf, r0, Sigma, a \\
+  \textbf{2D: RadAbs / FirstPassagePair} & const D, const kf, const Sigma \\
+\end{tabular}
+% *) See table \ref{table:2Drenaming}.
+\end{table}
+
+The newer 3D functions appearantly have \verb|a| as function parameter, whereas the older 2D funtions have \verb|seta| as a member function instead of as parameter. (See section \ref{Memberfunctions}.) The 2D RabdAbs / FirstPassagePair function does not have r0 as parameter, but its member functions do (vice versa for the 3D RadAbs function).
+
+\section{Member Functions}
+\label{Memberfunctions}
+
+Currently the 3D functions are used as a substitute for the 2D functions. Therefore, to check if the 2D functions can be implemented with the above code, it is good to check member function nomenclature for agreement.
+
+\begin{table}[h!]
+\caption{List of member functions 2D Green's functions and their current 3D substitutes. (Obtained from boost linking.)}
 \label{table:memberfunctions}
 \begin{tabular}{ p{0.49\textwidth} p{0.49\textwidth} }
   \textbf{FirstPassageGreensFunction2D} & \textbf{3DAbsSym} \\ \hline
 
     getD & getD \\
-    seta & (n.a.) \\
+    seta (a) & (n.a.) \\
     geta & geta \\
-    drawTime & drawTime \\
-    drawR & drawR \\ \hline
-    p\_survival & p\_survival \\
+    drawTime (rnd) & drawTime (rnd) \\
+    drawR (rnd, t) & drawR (rnd, t) \\ \hline
+    p\_survival (t) & p\_survival (t) \\
     
-    \textit{p\_int\_r} & p\_int\_r \\
-    \textit{p\_int\_r\_free} & p\_int\_r\_free \\
-    \textit{p\_r\_fourier} & \textit{p\_r\_fourier} \\ 
+    \textit{p\_int\_r (r, t) } & p\_int\_r (r, t) \\
+    \textit{p\_int\_r\_free (r, t)} & p\_int\_r\_free (r, t) \\
+    \textit{p\_r\_fourier} & \textit{p\_r\_fourier (r,t )}*  \\ 
 
   & \\
-  \textbf{FirstPassageGreensFunction2D} & \textbf{3DAbsSym} \\ \hline
+  \textbf{FirstPassagePairGreensFunction2D} & \textbf{3dRadAbs} \\ \hline
 
-    seta & (n.a.) \\
+    seta (a) & (n.a.) \\
     geta & geta \\
     getD & getD \\
     getkf & getkf \\
     geth & (n.a.) \\ \hline
-    setSigma & getSigma \\
-    drawTime & drawTime \\
-    (n.a) & \textit{drawTime2} \\
-    drawEventType & drawEventType \\ 
-    drawR & drawR \\ \hline 
-    drawTheta & drawTheta \\
-    getAlpha & (n.a.) \\
-    getAlpha0 & (n.a) \\
-    f\_alpha & f\_alpha \\
-    f\_alpha0 & f\_alpha0 \\ \hline
-    alpha\_i & (n.a.) \\
-    (n.a.) & alpha0\_i \\
-    p\_survival & p\_survival \\
-    (n.a.) & dp\_survival \\
-    leaves & leaves \\ \hline 
-    leavea & leavea \\
-    (n.a.) & p\_0 \\
-    (n.a.) & p\_int\_r \\
-    (n.a.) & p\_theta \\
-    (n.a.) & ip\_theta \\ \hline
-    (n.a.) & idp\_theta \\
+    getSigma & getSigma \\
+    drawTime (rnd, r0) & drawTime (rnd) \\
+    (n.a) & \textit{drawTime2 (rnd1, rnd2)} \\
+    drawEventType (rnd, r0, t) & drawEventType (rnd, t) \\ 
+    drawR (rnd, r0, t) & drawR (rnd, t) \\ \hline 
+    drawTheta (rnd, r, r0, t) & drawTheta (rnd, r, t) \\
+    getAlpha (n, i) & (n.a.) \\
+    getAlpha0 (i) & (n.a) \\
+    f\_alpha (alpha, n) & f\_alpha (alpha, n) \\
+    f\_alpha0 (alpha) & f\_alpha0 (alpha) \\ \hline
+    alpha\_i (offset, n) & (n.a.) \\
+    (n.a.) & alpha0\_i  (i) \\
+    p\_survival (alpha, r0) & p\_survival (alpha) \\
+    (n.a.) & dp\_survival (alpha) \\
+    leaves (t, r0) & leaves (t) \\ \hline 
+    leavea (t, r0) & leavea (t) \\
+    (n.a.) & p\_0 (t, r) \\
+    (n.a.) & p\_int\_r (r, t) \\
+    (n.a.) & p\_theta (theta, r, t) \\
+    (n.a.) & ip\_theta (theta, r, t) \\ \hline
+    (n.a.) & idp\_theta (theta, r, t) \\
 
-    (n.a.) & f\_alpha\_aux \\
+    (n.a.) & f\_alpha\_aux (alpha, n) \\
 
-    (n.a.) & p\_survival\_i\_exp \\
-    (n.a.) & p\_survival\_i\_alpha \\
+    (n.a.) & p\_survival\_i\_exp (i, t) \\
+    (n.a.) & p\_survival\_i\_alpha (alpha, t) \\
 
-    (n.a.) & \textit{guess\_maxi} \\ \hline
-    (n.a.) & dump \\
-    (n.a.) & \textit{alpha\_i} \\
-  
+    (n.a.) & \textit{guess\_maxi (t) } \\ \hline
+    (n.a.) & dump () \\
+    (n.a.) & \textit{alpha\_i (i, n, solver)} \\  
 \end{tabular}
 
 \bigskip 
 
-Note that italic functions are actually not declarated but present as comment. (See section \ref{boostdeclaration} for 2D functions.)
+Note that italic functions are actually not declarated but present as comment. (See section \ref{boostdeclaration} for 2D functions.) Functions marked with a * are declared in Boost linking, but are not present in header file. Functions without brackets are not inspected for parameters.
 \end{table}
 
-\section{Implementation 2D functions}
+Of course, there should also be some differences, as the 2D Green's Functions should lose a dimension. 
 
-In principle the functions should only be renamed (filenames, classnames), checked for member function nomenclature consistency with current nomenclature and pasted into current eGFRD folder, their bindings also renamed and added to the \texttt{greensfunctions.cpp} file.
+\section{Usage in eGFRD Code}
+\label{2Dsubstusage}
+
+In section \ref{2Dsubst} (table \ref{3Dtablesubst} \& \ref{3Dtablesubstinst}) there is already a list of when 3D Green's Function classes are instantiated for 2D purposes. 
+
+When the Green's Functions are instantiated they are directly or indirectly fed to the wrapper functions, which can be found in \verb|greens_function_wrapper.py|. Most Green's Functions are centrally organized via the functions in table \ref{3Dtablesubstinst}. Via these functions the Green's Function class is returned, and either put in a variable, like \verb|gf|, or fed to a wrapper function directly. A common practise in the code thus is:
+
+\begin{verbatim}
+class Pair:
+    def some_greens_function(self):
+        return GreensFunction3DAbsSym(self.D_R, self.a_R)
+
+    def draw_something(self, dt, event_type):
+	if (this && this):
+            gf = self.some_greens_function()
+            r = draw_r_wrapper(gf, dt, self.a_R)
+\end{verbatim}
+
+Green's Function class member functions that are called via the wrapper can be found in table \ref{table:gfwrapper}.
+
+\begin{table}[h!]
+\caption{Usage of Green's Function class member functions.}
+\label{table:gfwrapper}
+\begin{tabular}{ p{0.49\textwidth} p{0.49\textwidth} }
+ \textbf{Member function GF class (C++)} & \textbf{Python wrapper function name} \\
+ drawTime(rnd) & from python function draw\_time\_wrapper(gf) \\
+ drawEventType(rnd, dt) & draw\_event\_type\_wrapper(gf, dt) \\
+ drawR(rnd, dt) & draw\_r\_wrapper(gf, dt, a, sigma=None) \\
+ drawTheta(rnd, r, dt) & draw\_theta\_wrapper(gf, r, dt) \\
+\end{tabular}
+\end{table}
+
+\section{Implementation TODO List}
+\label{todolist}
+
+\begin{itemize}
+\item Rename the functions (filenames and classnames).
+\item Remove ''seta`` and add ''a`` to the input parameter list.
+\item Remove ''r0`` from member functions input parameters, add as class parameter.
+\item Define functions in Boost to set up linking.
+\item Replace references to 3D functions with 2D references. Where applicable, see table \ref{3Dtablesubstinst}.
+\item Add functions to automake files.
+\item Add functions to checks.
+\end{itemize}
+
+\section{Implementation Log}
+
+What follows is a log of the execution of the TODO list mentioned in section \ref{todolist}, where also additional actions taken are logged. 
+
+\subsection{Log}
+
+\begin{description}
+ \item[Renaming:] Done.
+ \item[Convert seta to a:] Done. The function seta did contain some lines that said \verb|if (this->a != a) {clear alphatable(); .. }| but these lines didn't seem relevant anymore (just removed them).
+ \item[moving r0:] This gave some more difficulties. r0 often used. Did the following:
+    \begin{itemize}     
+      \item r0 needed to be added to be added to constructor declaration part with parent.
+      \item Addition of getr0 wasn't necessary as already inherited.
+      \item Removed r0 from all member function declarations.
+      \item Added \verb|const Real r0(this->getr0);| where member functions made use of r0.
+    \end{itemize}
+ \item[Define in boost:] Done.
+ \item[Automake:] Done. Files were added to Automake.am.
+ \item[Additional:] There were some additional actions necessary: 
+  \begin{itemize}     
+    \item - getname() was not present in 2D functions, which I added.
+    \item - drawEventType was incorrectly declared as EventType, that should have been EventKind (modified).
+    \item - Some function declarations had conflicting prototypes. In case of \verb|drawTime|, \verb|drawR|, \verb|drawTheta|, \verb|drawEventType| and \verb|dump| I removed ''const``.
+    \item - typedef ''RealVector`` wasn't declared, so did this (copied from 3D functions).
+    \item - Also added private to some class constants (e.g. epsilon).
+    \item - \verb|#include "compat.h"| was necessary to avoid problem with std::exp.
+    \item - changed \verb|ESCAPE| and \verb|REACTION| to \verb|IV_ESCAPE| and \verb|IV_REACTION|.
+    \item - Added "dump" to .def boost.
+    \item - Added printing of r0 to 2dRadAbs::dump().
+  \end{itemize}
+ \item[Compile:] Works, but gives errors. See section \ref{section:currentstatus}.
+ \item[Checks:] Not done yet.
+\end{description}
+
+\subsection{Usefull Remarks}
+
+During the implementation some things became clear that might be convenient to present here:
+\begin{itemize}
+\item Both Green's Functions use \verb|PairGreensFunction.hpp| as class from which they inherit. This function already contains the functions \verb|getD()|, \verb|getkf()|, \verb|getSigma()| and \verb|getr0()|.
+\end{itemize}
+
+Also keep in mind compiling of the eGFRD code may take quite a while. This is heavily dependent on processor speed, and file writing (over network) speed. (My laptop does it in 3 minutes, my desktop takes 15 up to 45 minutes.)
+
+\section{Current status}
+\label{section:currentstatus}
+
+The 2D Green's Functions are converted to the newer standards of eGFRD coding, and are compiling. Apparently something does go wrong however, since when a small test script is used to test the functioning of the functions, errors show up.
+
+\subsection{Obtaining the current files}
+
+Files with the modified Green's Functions and other 2D-adapted code can be found via the Jintram git repository. Use the following commands to obtain the files:
+
+\begin{verbatim}
+# Obtain Jintram repository
+git clone git@github.com:Jintram/egfrd.git mydirectory_2DGF
+# Go to the directory
+cd mydirectory_2DGF
+# View all branches on it
+git branch -a
+# Switch to the correct branch
+git checkout -b 2DGF remotes/origin/2DGF
+\end{verbatim}
+
+Not necessary when you just obtained the repository, but when you want to obtain a newer version of the branch, use:
+
+\begin{verbatim}
+# To make it up-to-date if work has been done on another location:
+# git pull origin 2DGF
+\end{verbatim}
+
+In the directory \verb|samples/2d| there's a script that allows testing of the 2d functionality.
+
+\subsection{Current problems}
+
+As just mentioned, in the \verb|samples/2d| a test script can be found. This simply creates a membrane with a few particles on it. Very basic. It however already gives problems. They errors only seem to occur in the pair Green's Function: 2DRadAbs. 
+  The following errors are observed (truncated):
+
+\begin{itemize}
+ \item \begin{verbatim}
+Exception: gf.drawTheta() failed, GSL error: domain error at 
+bessel_Y1.c:83, rnd = 0.0159284, r = 0.000218059, dt = 1299.07; 
+D = 2e-12, sigma = 2e-09, a = 0.000233428, kf = 0, r0 = 0.000133532, h = 0
+\end{verbatim}
+ \item \begin{verbatim}
+Exception: gf.drawTheta() failed, GSL error: domain error at 
+bessel_Yn.c:125, rnd = 0.214062, r = 5.62868e-05, dt = 26.1266; D = 2e-12, 
+sigma = 2e-05, a = 5.62868e-05, kf = 0, r0 = 3.33351e-05, h = 0
+\end{verbatim}
+ \item \begin{verbatim}
+Exception: gf.drawTheta() failed, GSL error: endpoints do not 
+straddle y=0 at brent.c:74, rnd = 0.165526, r = 4.35652e-05, dt = 119.67; 
+D = 2e-12, sigma = 2e-05, a = 6.31786e-05, kf = 0, r0 = 2.63915e-05, h = 0
+\end{verbatim}
+ \item \begin{verbatim}Exception: gf.drawTheta() failed, GSL error: underflow at 
+gamma.c:1454, rnd = 0.926605, r = 4.28278e-05, dt = 42.1335; D = 2e-12, 
+sigma = 2e-05, a = 7.47942e-05, kf = 0, r0 = 5.02028e-05, h = 0
+\end{verbatim}
+\end{itemize}
+
+Perhaps the problem lies in the heavily adapted way of using r0 (therefore printing of r0 was added to \verb|dump()| function.) The numbers however seem to lie in the correct order of magnitude.
+
+\subsection{todo}
+
+It seems that the abovementioned problems require attention before the 2D Green's Functions become operational.  
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
