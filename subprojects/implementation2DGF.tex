@@ -502,6 +502,8 @@ sigma = 2e-05, a = 7.47942e-05, kf = 0, r0 = 5.02028e-05, h = 0
 \end{verbatim}
 \end{itemize}
 
+When turning on the debugging options or looking at the VTK-rendered logs, it becomes clear that the system mainly crashes when it attempts to form a pair (in other words: tries to use 2DRadAbs).
+
 Perhaps the problem lies in the heavily adapted way of using r0 (therefore printing of r0 was added to \verb|dump()| function.) The numbers however seem to lie in the correct order of magnitude.
 
 \subsection{todo}
